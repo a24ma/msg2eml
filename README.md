@@ -15,5 +15,6 @@ Outlook の .msg ファイルから、
 
 * `python main.py <email.msg>`
 * (Windows 環境) msg2eml.bat に msg ファイルをドラックアンドドロップする。
+  * パスに特殊文字を含む場合はエラーとなるので注意。
 
 実行時に Outlook でデータ読み込みを承認するよう要求されるので注意。

@@ -172,13 +172,13 @@ if __name__ == "__main__":
         args = sys.argv
         if len(args) >= 2:
             filename = args[1]
-            print("Start to convert {filename}...")
-            print("NOTE: Please check outlook application for authentication.")
+            print(f"[INFO] Start to convert {filename}...")
+            print(f"[INFO] NOTE: Please check outlook application for authentication.")
             main(filename)
-            print("Completed.")
+            print(f"[INFO] Completed.")
             print()
         else:
-            print(f"USAGE: {args[0]} <email.msg>")
+            print(f"[INFO] USAGE: {args[0]} <email.msg>")
     except Exception as e:
         print(f"""
 ===== [ERROR] =====

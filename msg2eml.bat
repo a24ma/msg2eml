@@ -1,5 +1,10 @@
 echo off
-echo "ãƒ‰ãƒ©ãƒƒã‚°ã‚¢ãƒ³ãƒ‰ãƒ‰ãƒ­ãƒƒãƒ—ã§msgãƒ•ã‚¡ã‚¤ãƒ«ã‚’emlãƒ•ã‚¡ã‚¤ãƒ«ã«å¤‰æ›ã—ã¾ã™ï¼ˆè¤‡æ•°ãƒ•ã‚¡ã‚¤ãƒ«å¯ï¼‰ã€‚"
-cd /d %~dp0
-for %%a in (%*) do python main.py "%%a"
+echo "ƒhƒ‰ƒbƒOƒAƒ“ƒhƒhƒƒbƒv‚Åmsgƒtƒ@ƒCƒ‹‚ğemlƒtƒ@ƒCƒ‹‚É•ÏŠ·‚µ‚Ü‚·i•¡”ƒtƒ@ƒCƒ‹‰ÂjB"
+cd /d "%~dp0"
+setlocal enabledelayedexpansion
+set x=%*
+for %%a in (!x!) do (
+    python main.py %%a
+)
 timeout 5
+pause
