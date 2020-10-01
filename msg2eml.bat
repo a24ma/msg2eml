@@ -6,5 +6,4 @@ set x=%*
 for %%a in (!x!) do (
     python main.py %%a
 )
-timeout 5
-pause
+timeout 10

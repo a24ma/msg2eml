@@ -9,6 +9,12 @@ Outlook の .msg ファイルから、
 * ファイル名は ディレクトリ内序数・date・sender・subject 情報から自動生成。
   * 書き換える必要がある場合はソースコード要変更。
 
+# インストール
+
+```
+pip install pywin32 pathlib
+```
+
 # 使い方
 
 以下のいずれかを実行する。
