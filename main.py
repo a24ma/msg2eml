@@ -1,12 +1,19 @@
 import os
 import re
 import sys
+import time
 import datetime
 import win32com.client
 import traceback
 import pathlib
+import mimetypes
+from email import encoders
 from email import generator
 from email.mime.multipart import MIMEMultipart
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 from email.headerregistry import Address
 from email.header import Header
@@ -66,9 +73,13 @@ class Msg2EmlConverter(object):
             "　": "_",
             " ": "_",
             "|": "_",
+            "/": "／",
             "\\": "_",
+            "(": "（",
+            ")": "）",
         }))
-        if suffix is None: suffix = ""
+        if suffix is None:
+            suffix = ""
         return name[:max_len] + suffix
 
     def __init__(self):
@@ -78,6 +89,7 @@ class Msg2EmlConverter(object):
         srcpath = pathlib.Path(filepath).absolute()
         outlook = win32com.client.Dispatch(
             "Outlook.Application").GetNamespace("MAPI")
+        self.outlook = outlook
         mail = outlook.OpenSharedItem(str(srcpath))
         self.subject = mail.subject
         sender = mail.sender
@@ -116,14 +128,15 @@ class Msg2EmlConverter(object):
         filename = f"c{self.aolc_index:02d}_{self.mail_id}.eml"
         self.path = parent.joinpath(filename)
 
-    def _attachment_filename(self, att, index):
+    def _attachment_filepath(self, att, index):
         simple_fname = self.simplify_name(att.filename)
         prefix = f"c{self.aolc_index+index:02d}_{self.mail_id}"
         filename = f"{prefix}_[{index:02d}]{simple_fname}"
-        return str(self.path.parent.joinpath(filename))
+        return self.path.parent.joinpath(filename)
 
     def show(self, show_body=False):
-        if self.path is None: raise Exception("read msg first")
+        if self.path is None:
+            raise Exception("read msg first")
         print("Subject: ", self.subject)
         print("   From: ", self.sender)
         print("     To: ", self.recipients_to)
@@ -143,21 +156,53 @@ class Msg2EmlConverter(object):
 """)
 
     def save_as_eml(self):
-        if self.path is None: raise Exception("read msg first")
-        msg = MIMEMultipart("alternative")
+        if self.path is None:
+            raise Exception("read msg first")
+        msg = MIMEMultipart()
         msg["Subject"] = self.subject
         msg["From"] = self.sender
         msg["To"] = self.recipients_to
         msg["Cc"] = self.recipients_cc
         msg["Date"] = self.date_exp
         msg.attach(MIMEText(self.body, self.bodyformat))
-        with open(str(self.path), "w") as f:
-            gen = generator.Generator(f)
-            gen.flatten(msg)
         i = 0
         for a in self.attachments:
             i += 1
-            a.SaveAsFile(self._attachment_filename(a, i))
+            path = self._attachment_filepath(a, i)
+            print(f"[DEBUG] Save '{path}'")
+            a.SaveAsFile(str(path))
+            msg.attach(self._read_attachment(path, a.filename))
+        with open(str(self.path), "w") as f:
+            gen = generator.Generator(f)
+            gen.flatten(msg)
+
+    def _read_attachment(self, pathobj, name):
+        path = str(pathobj)
+        ctype, encoding = mimetypes.guess_type(path)
+        maintype, subtype = ctype.split('/', 1)
+        if maintype == 'text':
+            with open(path) as fp:
+                # Note: we should handle calculating the charset
+                att = MIMEText(fp.read(), _subtype=subtype)
+        elif maintype == 'image':
+            with open(path, 'rb') as fp:
+                att = MIMEImage(fp.read(), _subtype=subtype)
+        elif maintype == 'audio':
+            with open(path, 'rb') as fp:
+                att = MIMEAudio(fp.read(), _subtype=subtype)
+        elif maintype == 'application':
+            with open(path, 'rb') as fp:
+                att = MIMEApplication(fp.read(), _subtype=subtype)
+        else:
+            with open(path, 'rb') as fp:
+                att = MIMEBase(maintype, subtype)
+                att.set_payload(fp.read())
+            encoders.encode_base64(att)
+        # Set the filename parameter
+        encoded_name = Header(name, "utf-8").encode()
+        att.add_header('Content-Disposition',
+                       'attachment', filename=encoded_name)
+        return att
 
 
 def main(filename):
@@ -173,7 +218,8 @@ if __name__ == "__main__":
         if len(args) >= 2:
             filename = args[1]
             print(f"[INFO] Start to convert {filename}...")
-            print(f"[INFO] NOTE: Please check outlook application for authentication.")
+            print(
+                f"[INFO] NOTE: Please check outlook application for authentication.")
             main(filename)
             print(f"[INFO] Completed.")
             print()
