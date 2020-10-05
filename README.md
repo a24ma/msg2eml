@@ -19,8 +19,12 @@ pip install pywin32 pathlib
 
 以下のいずれかを実行する。
 
-* `python main.py <email.msg>`
+* `python main.py` を実行する(GUIモードで起動)。
+  * 表示される白色領域に *.msg ファイルを D&D して使用。
+* `python main.py <email.msg>` を実行する(CUIモードで起動)。
+  * 一度に一つのファイルのみ処理が可能。
 * (Windows 環境) msg2eml.bat に msg ファイルをドラックアンドドロップする。
-  * パスに特殊文字を含む場合はエラーとなるので注意。
+  * 一度に複数のファイルの処理が可能。
+  * パスに半角空白文字を含む場合はエラーとなるので注意。
 
 実行時に Outlook でデータ読み込みを承認するよう要求されるので注意。
