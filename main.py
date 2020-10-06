@@ -29,9 +29,10 @@ if __name__ == "__main__":
     stop_on_error = False
     try:
         args = sys.argv
-        if len(args) >= 2:
-            args[0] == "-d"
-            log.setLevel(DEBUG)
+        print(args)
+        if "-d" in args:
+            args.remove("-d")
+            log = setup_logger(DEBUG)
             log.debug("Debug mode")
             stop_on_error = True
             args = args[1:]

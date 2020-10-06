@@ -56,7 +56,8 @@ class Converter(object):
 
     @staticmethod
     def simplify_name(name, max_len=20):
-        parts = name.rsplit(".", 2)
+        log.debug(f"simplify_name()  name: {name}")
+        parts = name.rsplit(".", 1)
         suffix = ""
         if len(parts) > 1:
             name = parts[0]
@@ -182,6 +183,8 @@ class Converter(object):
             gen.flatten(msg)
 
     def _read_attachment(self, pathobj, name):
+        log.debug(f"read_attachment() path: '{pathobj}'")
+        log.debug(f"read_attachment() name: '{name}'")
         path = str(pathobj)
         # ctype, encoding = mimetypes.guess_type(path)
         ctype, _ = mimetypes.guess_type(path)
