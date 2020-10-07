@@ -4,11 +4,6 @@ import traceback
 import sys
 from logutil import *
 
-log = setup_logger(WARNING)
-# getLogger("dndgui").setLevel(NOTSET)
-# getLogger("msg2eml").setLevel(NOTSET)
-
-
 def cuimode(args):
     filename = args[1]
     log.info(f"Start to convert {filename}...")
@@ -32,10 +27,16 @@ if __name__ == "__main__":
         print(args)
         if "-d" in args:
             args.remove("-d")
-            log = setup_logger(DEBUG)
-            log.debug("Debug mode")
+            log_level = DEBUG
+            print("Debug mode")
             stop_on_error = True
             args = args[1:]
+        else:
+            log_level = WARNING
+        log = setup_logger(log_level)
+        # getLogger("dndgui").setLevel(NOTSET)
+        getLogger("dndgui_timeout").setLevel(INFO)
+        # getLogger("msg2eml").setLevel(NOTSET)
         if len(args) >= 2:
             cuimode(args)
         else:

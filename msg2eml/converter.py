@@ -186,8 +186,13 @@ class Converter(object):
         log.debug(f"read_attachment() path: '{pathobj}'")
         log.debug(f"read_attachment() name: '{name}'")
         path = str(pathobj)
-        # ctype, encoding = mimetypes.guess_type(path)
-        ctype, _ = mimetypes.guess_type(path)
+        ctype, encoding = mimetypes.guess_type(path)
+        log.debug(f"read_attachment() ctype: '{ctype}'")
+        log.debug(f"read_attachment() encoding: '{encoding}'")
+        if ctype is None or encoding is not None:
+            log.warning(f"Cannot guess the type of '{path}', "
+                + "or it is encoded (compressed).")
+            ctype = 'application/octet-stream'
         maintype, subtype = ctype.split('/', 1)
         if maintype == 'text':
             with open(path) as fp:

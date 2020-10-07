@@ -8,6 +8,7 @@ from logging import getLogger
 from time import sleep
 
 log = getLogger(__package__)
+log_timeout = getLogger(__package__+"_timeout")
 
 
 class PathInputHandler(object):
@@ -136,7 +137,7 @@ class MainForm(object):
         while True:
             event, values = self.window.Read(
                 timeout=1000, timeout_key='_TIMEOUT_')
-            log.debug(f"run() (event,values)=({event},{values})")
+            log_timeout.debug(f"run() (event,values)=({event},{values})")
             if self._on_exit_event(event, values):
                 break
             # Inputboxのテキスト更新による無限ループ防止
