@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import re
 import sys
@@ -6,6 +8,7 @@ import datetime
 import win32com.client
 import pathlib
 import mimetypes
+import unicodedata
 from email import encoders
 from email import generator
 from email.mime.multipart import MIMEMultipart
@@ -56,6 +59,7 @@ class Converter(object):
 
     @staticmethod
     def simplify_name(name, max_len=20):
+        name = unicodedata.normalize("NFKD", name)
         log.debug(f"simplify_name()  name: {name}")
         parts = name.rsplit(".", 1)
         suffix = ""

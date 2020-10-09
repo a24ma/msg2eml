@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
+
 import PySimpleGUIQt as sg
 import pathlib
 import msg2eml
 import traceback
 import dndgui
+import unicodedata
 from datetime import datetime
 from logging import getLogger
 from time import sleep
+from logutil import out_diff
 
 log = getLogger(__package__)
 log_timeout = getLogger(__package__+"_timeout")
@@ -14,36 +18,58 @@ log_timeout = getLogger(__package__+"_timeout")
 class PathInputHandler(object):
     def __init__(self):
         self.path_list = []
+        self.valid_path_list = []
         self.valid_map = []
         self.targets = []
         self.path_count = 0
         self.valid_count = 0
         self.is_valid = False
 
-    def receive_input(self, values):
-        self.path_list = self._get_input_path_list(values)
-        self._validate_path_list()
-        self.targets = list(zip(
-            range(self.path_count), self.path_list, self.valid_map))
+    def receive_input(self, input_data):
+        try:
+            log.debug(f"receive_input() input: '{input_data}'")
+            self.path_list = self._get_input_path_list(input_data)
+            log.debug(f"receive_input() paths: '{self.path_list}'")
+            self._validate_path_list()
+            self.targets = list(zip(
+                range(self.path_count), self.valid_path_list, self.valid_map))
+        except OSError:
+            log.warning(f"Invalid path found in '{input_data}'")
+            log.debug(f"Stacktrace:\n===\n{traceback.format_exc()}\n===\n")
+            self.is_valid = False
 
     def _validate_path_list(self):
         self.path_count = len(self.path_list)
-        self.valid_map = [self._check_valid(p) for p in self.path_list]
+        
+        exists = [p.exists() for p in self.path_list]
+        suffix_is_msg = [p.suffix == ".msg" for p in self.path_list]
+        self.valid_path_list = [
+            self._resolve_ambiguous_char(p) if not e and s and p.parent.exists() else p
+            for p, e, s in zip(self.path_list, exists, suffix_is_msg)
+        ]
+        self.valid_map = [
+            p.exists() and p.suffix == ".msg" for p in self.valid_path_list]
         self.valid_count = self.valid_map.count(True)
         self.is_valid = self.valid_count > 0
 
-    def _get_input_path_list(self, values):
-        raw_data = values["_INPUT_"]
-        url_list = [d for d in raw_data.split("\n") if len(d) > 0]
+    def _get_input_path_list(self, input_data):
+        url_list = [d for d in input_data.split("\n") if len(d) > 0]
         pathexp_list = [u.replace(r"file:///", r"") for u in url_list]
         return [pathlib.Path(p) for p in pathexp_list]
 
-    def _check_valid(self, path):
-        try:
-            return path.exists() and path.suffix == ".msg"
-        except OSError:
-            log.warning(f"Invalid path: '{path}'")
-            return False
+    def _resolve_ambiguous_char(self, path):
+        log.warning(f"'{path}' may have ambiguous chars.")
+        # Normalize human-unrecognizable words.
+        # https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
+        npath = unicodedata.normalize("NFKD", str(path))
+        for content in path.parent.iterdir():
+            if content.suffix != ".msg": continue
+            ncont = unicodedata.normalize("NFKD", str(content))
+            if npath == ncont:
+                log.warning(f"'{path}' is assumed to be identical to '{content}'.")
+                log.warning(out_diff(str(path), str(content)))
+                return content
+        return path
 
     def convert(self, notify):
         conv = msg2eml.Converter()
@@ -76,7 +102,7 @@ class MainForm(object):
         self.width = 576
         self.layout = [
             [sg.Text("Starting...", **self._bd_status_kw(1, 24))],
-            [sg.Multiline("", **self._bd_status_kw(2, 128))],
+            [sg.Multiline("", disabled=True, **self._bd_status_kw(2, 128))],
             [sg.Text("", **self._bd_status_kw(3, 24))],
             [sg.Multiline(
                 "D&D *.msg file(s) here", key="_INPUT_",
@@ -125,6 +151,7 @@ class MainForm(object):
 
     def _on_exit_event(self, event, values):
         if event is None or event == "Exit":
+            log.info("Form close.")
             self._on_running = False
             return True
         return False
@@ -158,8 +185,10 @@ class MainForm(object):
     def _on_dnd_event(self, event, values):
         self._skip_next_event = True
         self.inputbox = "D&D *.msg file(s) here"
-        self.path_input_hdr.receive_input(values)
+        input_data = values["_INPUT_"]
+        self.path_input_hdr.receive_input(input_data)
         if not self.path_input_hdr.is_valid:
+            log.error(f"Not found *.msg files. Check input data:\n===\n{input_data}\n===\n")
             self.statustext = "ERROR: Not found *.msg files."
             return
         self._update_status_text("NOTE: Outlook の権限確認が出るので許可してください.")
