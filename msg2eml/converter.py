@@ -130,7 +130,7 @@ class Converter(object):
                 i = max(i, index)
             f.name.startswith("")
         self.aolc_index = i + 1
-        d = self.date.strftime("%Y-%m-%d_%H-%M")
+        d = self.date.strftime("%Y-%m%d_%H-%M")
         simple_sub = self.simplify_name(self.subject)
         self.mail_id = f"{d}_{self.sender_id}_{simple_sub}"
         filename = f"c{self.aolc_index:02d}_{self.mail_id}.eml"
