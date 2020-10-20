@@ -213,7 +213,7 @@ class Converter(object):
                 + "or it is encoded (compressed).")
             ctype = 'application/octet-stream'
         maintype, subtype = ctype.split('/', 1)
-        if maintype == 'text':
+        if maintype == 'text' and encoding is None:
             encoding = self._detect_txt_encoding(path)
         log.debug(f"read_attachment() encoding: '{encoding}'")
         if maintype == 'text' and encoding is not None:
