@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import time
+import chardet
 import datetime
 import win32com.client
 import pathlib
@@ -62,8 +63,8 @@ class Converter(object):
         if len(parts) > 1:
             name = parts[0]
             suffix = "." + parts[1]
-        name = re.sub("re: ?", "", name, flags=re.I)
-        name = re.sub("fwd?: ?", "", name, flags=re.I)
+        name = re.sub(r"re: *", "", name, flags=re.I)
+        name = re.sub(r"fwd?: *", "", name, flags=re.I)
         name = name.strip()
         name = name.translate(str.maketrans({
             "?": "？",
@@ -83,7 +84,17 @@ class Converter(object):
         }))
         if suffix is None:
             suffix = ""
-        return name[:max_len] + suffix
+        if len(name) > max_len:
+            name = re.sub(r"\[.+\]", "", name)
+            name = re.sub(r"【.+】", "", name)
+            name = re.sub(r"-+", "-", name)
+            name = re.sub(r"_+", "_", name)
+            name = re.sub(r"^_", "", name) #strip
+            name = re.sub(r"_$", "", name) #strip
+        if len(name) > max_len:
+            halflen = max_len // 2
+            name = name[:halflen] + "~" + name[-halflen:]
+        return name + suffix
 
     def __init__(self):
         self.outlook = win32com.client.Dispatch(
@@ -171,16 +182,25 @@ class Converter(object):
         msg["Cc"] = self.recipients_cc
         msg["Date"] = self.date_exp
         msg.attach(MIMEText(self.body, self.bodyformat))
-        i = 0
+        i = 1
         for a in self.attachments:
-            i += 1
             path = self._attachment_filepath(a, i)
+            if self._ignore_attachment(path):
+                log.warning(f"Attachment file '{path.name}' is ignored.")
+                continue
             log.debug(f"save_as_eml() Save '{path}'")
             a.SaveAsFile(str(path))
             msg.attach(self._read_attachment(path, a.filename))
+            i += 1
         with open(str(self.path), "w") as f:
             gen = generator.Generator(f)
             gen.flatten(msg)
+
+    def _ignore_attachment(self, path):
+        name = str(path.name)
+        if "無題の添付ファイル" in name:
+            return True
+        return False
 
     def _read_attachment(self, pathobj, name):
         log.debug(f"read_attachment() path: '{pathobj}'")
@@ -188,15 +208,16 @@ class Converter(object):
         path = str(pathobj)
         ctype, encoding = mimetypes.guess_type(path)
         log.debug(f"read_attachment() ctype: '{ctype}'")
-        log.debug(f"read_attachment() encoding: '{encoding}'")
         if ctype is None or encoding is not None:
             log.warning(f"Cannot guess the type of '{path}', "
                 + "or it is encoded (compressed).")
             ctype = 'application/octet-stream'
         maintype, subtype = ctype.split('/', 1)
         if maintype == 'text':
-            with open(path) as fp:
-                # Note: we should handle calculating the charset
+            encoding = self._detect_txt_encoding(path)
+        log.debug(f"read_attachment() encoding: '{encoding}'")
+        if maintype == 'text' and encoding is not None:
+            with open(path, 'r', encoding=encoding) as fp:
                 att = MIMEText(fp.read(), _subtype=subtype)
         elif maintype == 'image':
             with open(path, 'rb') as fp:
@@ -217,3 +238,9 @@ class Converter(object):
         att.add_header('Content-Disposition',
                        'attachment', filename=encoded_name)
         return att
+
+    def _detect_txt_encoding(self, path):
+        with open(path, 'rb') as f:
+            binary = f.read()
+        return chardet.detect(binary)["encoding"]
+
