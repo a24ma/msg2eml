@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import re
 import sys
@@ -7,6 +9,7 @@ import datetime
 import win32com.client
 import pathlib
 import mimetypes
+import unicodedata
 from email import encoders
 from email import generator
 from email.mime.multipart import MIMEMultipart
@@ -57,6 +60,7 @@ class Converter(object):
 
     @staticmethod
     def simplify_name(name, max_len=20):
+        name = unicodedata.normalize("NFKD", name)
         log.debug(f"simplify_name()  name: {name}")
         parts = name.rsplit(".", 1)
         suffix = ""
@@ -137,7 +141,7 @@ class Converter(object):
                 i = max(i, index)
             f.name.startswith("")
         self.aolc_index = i + 1
-        d = self.date.strftime("%Y-%m-%d_%H-%M")
+        d = self.date.strftime("%Y-%m%d_%H-%M")
         simple_sub = self.simplify_name(self.subject)
         self.mail_id = f"{d}_{self.sender_id}_{simple_sub}"
         filename = f"c{self.aolc_index:02d}_{self.mail_id}.eml"

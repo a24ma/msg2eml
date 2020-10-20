@@ -8,11 +8,13 @@ Outlook の .msg ファイルから、
 * 日本標準時(JST)のみ対応。
 * ファイル名は ディレクトリ内序数・date・sender・subject 情報から自動生成。
   * 書き換える必要がある場合はソースコード要変更。
+  * (余裕があればフォーマッタを実装するかも。)
 
 # インストール
 
 ```
 pip install pywin32 pathlib
+pip install --upgrade PySimpleGUIQt
 ```
 
 # 使い方
