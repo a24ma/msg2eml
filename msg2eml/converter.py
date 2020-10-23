@@ -78,14 +78,14 @@ class Converter(object):
             ">": "＞",
             '"': "'",
             "*": "＊",
-            "　": "_",
-            " ": "_",
+            "　": " ",
             "|": "_",
             "/": "／",
-            "\\": "_",
             "(": "（",
             ")": "）",
         }))
+        name = re.sub(r"[\\\s]+", "_", name, flags=re.I)
+        name = re.sub("_+", "_", name)
         if suffix is None:
             suffix = ""
         if len(name) > max_len:
