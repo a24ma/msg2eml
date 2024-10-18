@@ -156,24 +156,26 @@ class Converter(object):
     def get_description(self, show_body=False):
         if self.path is None:
             raise Exception("read msg first")
-        msg = ""
+        msg = "\n----------\n"
         msg += f"Subject: {self.subject}\n"
         msg += f"   From: {self.sender}\n"
         msg += f"     To: {self.recipients_to}\n"
         msg += f"     CC: {self.recipients_cc}\n"
         msg += f"   Date: {self.date_exp}\n"
         msg += f" Format: {self.bodyformat}\n"
-        msg += "添付ファイル: \n"
-        i = 0
-        for a in self.attachments:
-            i += 1
-            msg += f"  {i:4d}. {a.filename}\n"
+        if len(self.attachments) > 0:
+            msg += "添付ファイル: \n"
+            i = 0
+            for a in self.attachments:
+                i += 1
+                msg += f"  {i:4d}. {a.filename}\n"
         if show_body:
             msg += (f"""
 ----- 本文 -----
 {self.body}
 ---------------
 """)
+        msg += "-----------\n"
         return msg
 
     def save_as_eml(self):

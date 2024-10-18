@@ -2,3 +2,8 @@
 !.git*
 __pycache__/
 learn/
+_backup/
+*.msg
+*.spec
+tmp*
+dist/
