@@ -80,7 +80,7 @@ def waitkey(wait_sec: int, output=print, **output_kwargs):
 
 
 def main(**kwargs):
-    runner = msg2eml.Msg2eml("./bg.png", "./ok.png", "./ng.png")
+    runner = msg2eml.Msg2eml("./mat/bg.png", "./mat/ok.png", "./mat/ng.png")
     runner.run()
     return True
 

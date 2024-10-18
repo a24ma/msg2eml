@@ -19,9 +19,9 @@ log = getLogger(__package__)
 
 class Core:
     WINDOW_SIZE_X = 300
-    WINDOW_SIZE_Y = 260
+    WINDOW_SIZE_Y = 300
     ANIME_RES = 30  # fps
-    ANIME_SPAN = 2  # sec
+    ANIME_SPAN = 1  # sec
     ANIME_TICK = 500 // ANIME_RES  # ms
     ANIME_TOTAL_TICKS = ANIME_RES * ANIME_SPAN
 
@@ -49,9 +49,13 @@ class Core:
         self.root_y = 0
 
         # 透過表示・タイトルバー非表示
-        root.configure(bg="SystemButtonFace")
-        root.attributes("-alpha", 0.7)
+        # root.configure(bg="SystemButtonFace")
+        root.attributes("-alpha", 0.8)
         root.overrideredirect(True)
+
+        tpcolor = "#F0FEFF"
+        root.configure(bg=tpcolor)
+        root.wm_attributes("-transparentcolor", tpcolor)
 
         # 最前面表示
         root.lift()
@@ -79,10 +83,10 @@ class Core:
         # Labelを作成・配置
         self.label = label = tk.Label(
             root,
-            text=self.DEFAULT_MSG,
-            image=self.tk_img_bg,
+            bg=tpcolor,
             compound=tk.CENTER,
         )
+        self.set_window_default()
         label.pack(fill=tk.BOTH, expand=True)
 
         # D&D イベントの登録
@@ -154,35 +158,65 @@ class Core:
             path = Path(path)
             log.info(f"msg2eml: {path}")
             if not path.is_file:
-                self.set_window_ng(f"file not found:\n{path}")
+                self.set_window_ng(f"File not found:\n{path}")
                 return
             if path.suffix != ".msg":
-                self.set_window_ng(f"invalid extention:\n{path.stem}")
+                self.set_window_ng(f"Invalid extention:\n{path.suffix}")
                 return
             self.msg2eml.read_msg(path)
             log.info(self.msg2eml.get_description(show_body=False))
             self.msg2eml.save_as_eml()
-        self.set_window_ok()
+        self.set_window_ok("Success.")
 
     def set_window_ok(self, msg=None):
         self.label.configure(image=self.tk_img_ok)
         self.label.configure(text=msg)
+        self.label.configure(
+            font=(
+                "Arial",
+                16,
+                "bold",
+                "roman",
+                "underline",
+                "normal",
+            )
+        )
         self.tick = 0
-        self.anime_from_ok()
+        self.root.after(500, self.anime_from_ok)
 
     def set_window_ng(self, msg=None):
         self.label.configure(image=self.tk_img_ng)
         self.label.configure(text=msg)
+        self.label.configure(
+            font=(
+                "Arial",
+                16,
+                "bold",
+                "roman",
+                "underline",
+                "normal",
+            )
+        )
         self.tick = 0
-        self.anime_from_ng()
+        self.root.after(2000, self.anime_from_ng)
 
     def set_window_default(self):
         self.label.configure(text=self.DEFAULT_MSG)
         self.label.configure(image=self.tk_img_bg)
+        self.label.configure(
+            font=(
+                "Arial",
+                11,
+                "bold",
+                "roman",
+                "normal",
+                "normal",
+            )
+        )
 
     def anime_from_ok(self):
         if self.tick >= self.ANIME_TOTAL_TICKS:
-            self.label.configure(image=self.tk_img_bg)
+            self.set_window_default()
             return
         self.label.configure(image=self.anime_ok[self.tick])
         self.tick += 1
@@ -190,7 +224,7 @@ class Core:
 
     def anime_from_ng(self):
         if self.tick >= self.ANIME_TOTAL_TICKS:
-            self.label.configure(image=self.tk_img_bg)
+            self.set_window_default()
             return
         self.label.configure(image=self.anime_ng[self.tick])
         self.tick += 1
