@@ -15,6 +15,7 @@ from PIL import Image, ImageTk
 import msg2eml
 
 log = getLogger(__package__)
+log_trace = getLogger("trace." + __package__)
 
 
 class Core:
@@ -117,12 +118,13 @@ class Core:
 
     def parse_dad_input(self, input):
         # D&D で入力されたファイルパスを解析
+        log.debug(f"D&D input: {input}")
         escaped = input
         escaped = escaped.replace(r"\{", "<L>")
         escaped = escaped.replace(r"\}", "<R>")
         escaped = escaped.replace(r"\ ", "<S>")
         splitted = [s.strip() for s in escaped.split(" ")]
-        log.debug(splitted)
+        log.debug(f"Escaped: {splitted}")
         n = len(splitted)
         path_list = []
         index = 0
@@ -133,11 +135,10 @@ class Core:
                 while index < n - 1:
                     index += 1
                     t = splitted[index]
+                    s += " " + t
                     if t[-1] == "}":
-                        s += " " + t[:-1]
                         break
-                    else:
-                        s += " " + t
+            s = s.rstrip("} ")
             path_list.append(s)
             index += 1
         decoded_list = []
@@ -147,6 +148,7 @@ class Core:
             dec = dec.replace("<R>", "}")
             dec = dec.replace("<S>", " ")
             decoded_list.append(dec)
+        log.debug(f"Decoded: {decoded_list}")
         return decoded_list
 
     def drop(self, event):
