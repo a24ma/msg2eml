@@ -1,0 +1,9 @@
+chardet==5.2.0
+click==8.1.7
+pillow==11.0.0
+pyinstaller==6.10.0
+PyAutoGUI==0.9.54
+pywin32==307
+rich==13.9.2
+tkinterdnd2==0.4.2
+Nuitka==2.4.10

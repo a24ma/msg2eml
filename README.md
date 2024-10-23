@@ -10,23 +10,26 @@ Outlook の .msg ファイルから、
   * 書き換える必要がある場合はソースコード要変更。
   * (余裕があればフォーマッタを実装するかも。)
 
-# インストール
+## インストール
 
 ```
-pip install pywin32 pathlib
-pip install --upgrade PySimpleGUIQt
+pip install pywin32 tkinterdnd2 nuitka pillow chardet click PyAutoGUI rich
+.\make.ps1 # exe が欲しい場合
 ```
 
-# 使い方
+## 使い方
 
 以下のいずれかを実行する。
 
-* `python main.py` を実行する(GUIモードで起動)。
-  * 表示される白色領域に *.msg ファイルを D&D して使用。
-* `python main.py <email.msg>` を実行する(CUIモードで起動)。
-  * 一度に一つのファイルのみ処理が可能。
-* (Windows 環境) msg2eml.bat に msg ファイルをドラックアンドドロップする。
-  * 一度に複数のファイルの処理が可能。
-  * パスに半角空白文字を含む場合はエラーとなるので注意。
+* CUI から `py main.py` を実行する。
+  * 表示されるウィンドウに *.msg ファイルを D&D して使用。
+  * 一度に複数のファイルを処理可能。
+  * 終了する場合はダブルクリックする。
+* `ms2eml.ps1` をダブルクリックで起動する。
+  * `ms2eml_dd.ps1` はデバッグモード。
+* `make.ps1` 実行後に生成される `msg2eml.exe` を実行する。
+  * `msg2eml_debug.exe` はコンソール付き。
+  * onefile ではないので python 環境やパッケージ不足で起動しない可能性がある。
+  * exe 特有のバグが起きる可能性があるので注意。
 
-実行時に Outlook でデータ読み込みを承認するよう要求されるので注意。
+実行時に Outlook でデータ読み込みを承認するよう要求される場合は許可する。

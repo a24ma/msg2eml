@@ -56,6 +56,7 @@ trap {
         $_
         Write-Host $delim -ForegroundColor "red"
     }
+    deactivate
     waitPrompt $waitSecOnFailed
     exit 1
 }
@@ -64,27 +65,75 @@ trap {
 ######################################
 #region    <MAIN>
 
+logInfo "venv 環境を作成します..."
 
-logInfo "exe を作成します..." -ForegroundColor "Green"
-if (Test-Path("msg2eml.exe")) {
-    LogWarn "すでに存在する exe を削除します."
-    Remove-Item "msg2eml.exe"
+if (-not(Test-Path("venv"))) {
+    py -m venv venv
 }
+.\venv\Scripts\activate
+py -m pip install --upgrade pip
+pip install -r conf/requirements.txt
 
-pyinstaller --onefile "main.py" `
-    --workpath .\.build.tmp `
-    --clean --name msg2eml `
-    --collect-all msg2eml `
-    --additional-hooks-dir=.\mat `
-    --icon ".\mat\icon.ico" `
-    -p . `
-    --windowed `
-    --distpath=.
+logInfo "exe を作成します..."
+
+nuitka `
+    --clean-cache="all" `
+    --include-package="msg2eml" `
+    --output-filename="msg2eml.exe" `
+    --output-dir=".build" `
+    --windows-icon-from-ico=".\mat\icon.ico" `
+    --windows-console-mode="disable" `
+    main.py
 
 if (!$?) {
     throw 'exe の作成に失敗しました.'
 }
+
+logInfo "exe (debug 用) を作成します..."
+
+nuitka `
+    --include-package="msg2eml" `
+    --output-filename="msg2eml_debug.exe" `
+    --output-dir=".build" `
+    --windows-icon-from-ico=".\mat\icon.ico" `
+    main.py
+
+if (!$?) {
+    throw 'exe (debug 用) の作成に失敗しました.'
+}
+
 logNote "完了しました." -ForegroundColor "Green"
+
+deactivate
+
+<# ###################################
+
+* onefile は可能だが、ウイルス扱いされる。
+* splash/company/file/product 系オプションはコンパイルエラーになる。
+
+# nuitka `
+#     --clean-cache="all" `
+#     --include-package="msg2eml" `
+#     --include-package="tkinterdnd2" `
+#     --include-package="win32com.client" `
+#     --output-filename="msg2eml.exe" `
+#     --output-dir=".build" `
+#     --onefile `
+#     --enable-plugin="tk-inter" `
+#     --windows-icon-from-ico=".\mat\icon.ico" `
+#     main.py
+
+    # --company-name="a24ma" `
+    # --file-version="1.0.0" `
+    # --product-name="msg2eml" `
+    # --product-version="1.0" `
+    # --file-description="Convert *.msg to .eml files by D&D." `
+
+    # --onefile-windows-splash-screen-image=".\mat\bg.png" `
+    # --standalone `
+    # --windows-console-mode="disable" `
+
+################################### #>
 
 #endregion </MAIN>
 ######################################

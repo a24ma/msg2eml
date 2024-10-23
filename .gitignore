@@ -8,3 +8,5 @@ _backup/
 tmp*
 dist/
 *.exe
+venv/
+nuitka*

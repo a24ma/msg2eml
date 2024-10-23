@@ -5,14 +5,9 @@
 # region    <IMPORT>
 
 import pathlib
-from pathlib import Path
-from pprint import pformat
-
 import tkinter as tk
-from tkinterdnd2 import DND_FILES, TkinterDnD
 import pyautogui
-from PIL import Image, ImageTk
-
+import PIL
 import msg2eml
 
 # pip install tkinterdnd2 pyautogui
@@ -22,7 +17,7 @@ import msg2eml
 # region    <USER_SETTINGS>
 
 log_package_name = "msg2eml"  # Avoid __package__==None on main
-sub_lib = [tk, pyautogui, Image, ImageTk]
+sub_lib = [tk, pyautogui, PIL]
 
 # endregion </USER_SETTINGS>
 ######################################
@@ -35,7 +30,7 @@ from rich import print
 from rich.console import Console
 from rich.logging import RichHandler
 
-log_trace_name = log_package_name + ".trace"  # logger with different logLevel
+log_trace_name = "trace." + log_package_name  # logger with different logLevel
 suppress_lib_on_err = [click, pathlib] + sub_lib  # Suppressed lib.'s stacktrace
 
 log = logging.getLogger(log_package_name)
@@ -62,6 +57,7 @@ def set_logger(debug_mode, quiet_mode, trace_mode=False):
     log.addHandler(log_hdl)
     # log.addHandler(logging.FileHandler("log.txt"))
 
+    log_trace.addHandler(log_hdl)
     if trace_mode:
         log_trace.setLevel(logging.DEBUG)
     else:
