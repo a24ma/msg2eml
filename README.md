@@ -28,8 +28,8 @@ pip install pywin32 tkinterdnd2 nuitka pillow chardet click PyAutoGUI rich
 * `ms2eml.ps1` をダブルクリックで起動する。
   * `ms2eml_dd.ps1` はデバッグモード。
 * `make.ps1` 実行後に生成される `msg2eml.exe` を実行する。
-  * `msg2eml_debug.exe` はコンソール付き。
+  * `msg2eml_debug.exe` はコンソール付き (verbose ではない)。
+  * exe 特有のバグ確認用 (コードのバグは msg2eml_dd.ps1 で確認)。
   * onefile ではないので python 環境やパッケージ不足で起動しない可能性がある。
-  * exe 特有のバグが起きる可能性があるので注意。
 
 実行時に Outlook でデータ読み込みを承認するよう要求される場合は許可する。

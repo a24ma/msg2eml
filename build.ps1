@@ -4,7 +4,7 @@
 # DOCUMENT
 
 * Created on: 2024/10/23
-* UPdated on: 2024/10/23
+* UPdated on: 2024/10/26
 * Requirements:
     + choco install xxxxx
 
@@ -73,6 +73,7 @@ if (-not(Test-Path("venv"))) {
 .\venv\Scripts\activate
 py -m pip install --upgrade pip
 pip install -r conf/requirements.txt
+# pip install -r conf/requirements.txt --no-cache-dir PyAutoGUI # キャッシュ利用で失敗する場合
 
 logInfo "exe を作成します..."
 
