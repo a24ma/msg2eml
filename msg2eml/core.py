@@ -11,6 +11,8 @@ import tkinter as tk
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import pyautogui
 from PIL import Image, ImageTk
+from rich.console import Console
+console = Console(stderr=True)
 
 import msg2eml
 
@@ -29,7 +31,8 @@ class Core:
     DEFAULT_MSG = "D&D: Convert *.msg to *.eml. \nDouble click: Close window."
 
     def __init__(self, img_bg, img_ok, img_ng):
-        self.msg2eml = msg2eml.Converter()
+        # self.msg2eml = msg2eml.Converter()
+        pass
 
         # ウィンドウの作成
         self.root = root = TkinterDnD.Tk()
@@ -40,7 +43,8 @@ class Core:
         w = self.WINDOW_SIZE_X
         h = self.WINDOW_SIZE_Y
         root.geometry(f"{w}x{h}")
-        root.geometry(f"+{x-w//2}+{y-h//2}")
+        # root.geometry(f"+{x-w//2}+{y-h//2}")
+        root.geometry(f"+{x}+{y}")
         root.resizable(False, False)
 
         # 位置変数の初期化
@@ -118,6 +122,7 @@ class Core:
 
     def parse_dad_input(self, input):
         # D&D で入力されたファイルパスを解析
+        log.debug(f"D&D input: {type(input)}")
         log.debug(f"D&D input: {input}")
         escaped = input
         escaped = escaped.replace(r"\{", "<L>")
@@ -136,7 +141,7 @@ class Core:
                     index += 1
                     t = splitted[index]
                     s += " " + t
-                    if t[-1] == "}":
+                    if len(t) > 0 and t[-1] == "}":
                         break
             s = s.rstrip("} ")
             path_list.append(s)
@@ -152,10 +157,17 @@ class Core:
         return decoded_list
 
     def drop(self, event):
+        try:
+            path_list = self.parse_dad_input(event.data)
+            if type(path_list) == str:
+                path_list = [path_list]
+            self._run_msg2eml(path_list)
+        except Exception as e:
+            self.set_window_ng(f"Unknown error:\n{str(e)[15:]}...")
+            console.print_exception()
+
+    def _run_msg2eml(self, path_list):
         # D&D の処理
-        path_list = self.parse_dad_input(event.data)
-        if type(path_list) == str:
-            path_list = [path_list]
         for path in path_list:
             path = Path(path)
             log.info(f"msg2eml: {path}")
@@ -165,9 +177,10 @@ class Core:
             if path.suffix != ".msg":
                 self.set_window_ng(f"Invalid extention:\n{path.suffix}")
                 return
-            self.msg2eml.read_msg(path)
-            log.info(self.msg2eml.get_description(show_body=False))
-            self.msg2eml.save_as_eml()
+            conv = msg2eml.Converter()
+            conv.read_msg(path)
+            log.info(conv.get_description(show_body=False))
+            conv.save_as_eml()
         self.set_window_ok("Success.")
 
     def set_window_ok(self, msg=None):

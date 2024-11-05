@@ -122,6 +122,7 @@ class Converter(object):
         self.attachments = mail.attachments
         self._init_date(mail.receivedtime)
         self._init_path(srcpath)
+        # mail.Close()
 
     def _init_date(self, dt):
         timezone = datetime.timezone(datetime.timedelta(hours=9))  # JSTのみ想定
