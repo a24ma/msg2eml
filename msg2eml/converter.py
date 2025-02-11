@@ -136,7 +136,7 @@ class Converter(object):
         for f in parent.iterdir():
             # if not f.name.endswith(".eml"):
             #     continue
-            m = re.match(r"c(\d\d)", f.name)
+            m = re.match(r"t(\d\d)", f.name)
             if m is not None:
                 index = int(m.groups()[0])
                 i = max(i, index)
@@ -145,12 +145,12 @@ class Converter(object):
         d = self.date.strftime("%Y-%m%d_%H-%M")
         simple_sub = self.simplify_name(self.subject)
         self.mail_id = f"{d}_{self.sender_id}_{simple_sub}"
-        filename = f"c{self.aolc_index:02d}_{self.mail_id}.eml"
+        filename = f"t{self.aolc_index:02d}_{self.mail_id}.eml"
         self.path = parent.joinpath(filename)
 
     def _attachment_filepath(self, att, index):
         simple_fname = self.simplify_name(att.filename)
-        prefix = f"c{self.aolc_index+index:02d}_{self.mail_id}"
+        prefix = f"t{self.aolc_index+index:02d}_{self.mail_id}"
         filename = f"{prefix}_[{index:02d}]{simple_fname}"
         return self.path.parent.joinpath(filename)
 
