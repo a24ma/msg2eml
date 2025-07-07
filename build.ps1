@@ -15,8 +15,13 @@ TODO: Do something.
 ################################### #>
 #region    <SETTINGS>
 
-$waitSecOnSccess = 3
-$waitSecOnFailed = 30
+if (-not (Test-Path .\conf\user.ps1)) {
+    Copy-Item .\conf\user.ps1.template .\conf\user.ps1
+}
+. .\conf\user.ps1
+
+$waitSecOnSccess = 30
+$waitSecOnFailed = 300
 $logSupLevel = 0 # TRACE
 $logSupLevel = 1 # DEBUG
 $logSupLevel = 2 # INFO
@@ -68,11 +73,14 @@ trap {
 logInfo "venv 環境を作成します..."
 
 if (-not(Test-Path("venv"))) {
-    py -m venv venv
+    py -3.12 -m venv venv
 }
+
 .\venv\Scripts\activate
-py -m pip install --upgrade pip
-pip install -r conf/requirements.txt
+logDebug "pip をアップグレードします."
+py -m pip install $proxyArg --upgrade pip
+logDebug "必要なパッケージをインストールします."
+pip install $proxyArg -r conf/requirements.txt
 # pip install -r conf/requirements.txt --no-cache-dir PyAutoGUI # キャッシュ利用で失敗する場合
 
 logInfo "exe を作成します..."
@@ -84,6 +92,7 @@ nuitka `
     --output-dir=".build" `
     --windows-icon-from-ico=".\mat\icon.ico" `
     --windows-console-mode="disable" `
+    --assume-yes-for-downloads `
     main.py
 
 if (!$?) {
@@ -97,6 +106,7 @@ nuitka `
     --output-filename="msg2eml_debug.exe" `
     --output-dir=".build" `
     --windows-icon-from-ico=".\mat\icon.ico" `
+    --assume-yes-for-downloads `
     main.py
 
 if (!$?) {

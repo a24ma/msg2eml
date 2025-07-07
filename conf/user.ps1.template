@@ -1,0 +1,19 @@
+#!/usr/bin/env pwsh
+
+$proxyArg = $null
+# # proxy が必要な場合.
+# $url = "proxy.xxx.jp"
+# $port = "99999"
+# $proxy = "http://${url}:${port}"
+# $env:http_proxy = $proxy
+# $env:https_proxy = $proxy
+# $proxyArg = "--proxy=${proxy}"
+
+$pyVer = $null
+# # python のバージョン指定が必要な場合.
+# # 2025/02 現在, 3.12.x 系のみ対応.
+# # インストール時に環境変数にパスを通すこと.
+# $pyVer = "3.12"
+
+# 参照エラー回避.
+Out-Null $proxyArg $pyVer
